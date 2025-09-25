@@ -18,7 +18,7 @@ stream = client.responses.create(
             "content": [
                 {
                     "type": "input_text",
-                    "text": "tell me somethings aout mexico",
+                    "text": "what are these two files about?",
                 },
                 {
                     "type": "input_file",
