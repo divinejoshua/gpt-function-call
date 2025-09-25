@@ -2,6 +2,7 @@ from openai import OpenAI
 import json
 import requests
 import sys
+from datetime import datetime
 from decouple import config
 
 # Initialize OpenAI client
@@ -103,12 +104,43 @@ def stream_response(messages):
     except Exception as e:
         print(f"Error during streaming: {str(e)}")
 
+def save_conversation_to_file(messages, filename):
+    """
+    Save the conversation to a text file.
+    
+    Args:
+        messages (list): List of message objects for the conversation
+        filename (str): Name of the file to save to
+    """
+    content = f"""Weather Agent Conversation
+Generated on: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+Model: gpt-4 with weather function calling
+
+Conversation:
+"""
+    
+    for message in messages:
+        if message["role"] == "system":
+            continue
+        elif message["role"] == "user":
+            content += f"\nUser: {message['content']}\n"
+        elif message["role"] == "assistant":
+            content += f"Weather Agent: {message['content']}\n"
+        elif message["role"] == "tool":
+            content += f"[Weather Data]: {message['content']}\n"
+    
+    with open(filename, 'w', encoding='utf-8') as f:
+        f.write(content)
+    
+    print(f"Conversation saved to: {filename}")
+
 def main():
     """
     Main function to run the weather chatbot.
     """
     print("🌤️ Weather Agent Chatbot")
-    print("Ask me about the weather in any city! Type 'quit' to exit.\n")
+    print("Ask me about the weather in any city! Type 'quit' to exit.")
+    print("Type 'save' to save the conversation to a file.\n")
     
     # Initialize conversation history
     messages = [
@@ -127,6 +159,13 @@ def main():
             if user_input.lower() in ['quit', 'exit', 'bye']:
                 print("\nGoodbye! 👋")
                 break
+            
+            # Check for save command
+            if user_input.lower() == 'save':
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                filename = f"weather_conversation_{timestamp}.txt"
+                save_conversation_to_file(messages, filename)
+                continue
             
             if not user_input:
                 continue
