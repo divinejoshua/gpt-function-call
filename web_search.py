@@ -8,7 +8,7 @@ stream = client.responses.create(
     model="gpt-4.1",
     stream=True,
     tools=[{"type": "web_search"}],
-    input="Who won the 2024 presidential election in the United States?"
+    input="What are the 5 ways to get a business idea https://medium.com/@qevoltlimited/5-ways-to-find-the-right-business-idea-6581dc6d9de6"
 )
 
 for chunk in stream:
@@ -27,11 +27,20 @@ for chunk in stream:
             if hasattr(chunk.item, 'status'):
                 print(f"   Status: {chunk.item.status}")
     
-    # Stream sources as they're discovered
-    if hasattr(chunk, 'annotation') and chunk.annotation:
-        if hasattr(chunk.annotation, 'type') and chunk.annotation.type == 'url_citation':
-            print(f"\n📚 SOURCE: {getattr(chunk.annotation, 'title', 'Unknown')}")
-            print(f"   URL: {getattr(chunk.annotation, 'url', 'Unknown')}")
+    # Stream sources as they're discovered via annotation events
+    if hasattr(chunk, 'type') and chunk.type == 'response.output_text.annotation.added':
+        if hasattr(chunk, 'annotation') and chunk.annotation:
+            if hasattr(chunk.annotation, 'type') and chunk.annotation.type == 'url_citation':
+                print(f"\n📚 SOURCE: {getattr(chunk.annotation, 'title', 'Unknown')}")
+                print(f"   URL: {getattr(chunk.annotation, 'url', 'Unknown')}")
+    
+    # Also check for tool calls in different event types
+    if hasattr(chunk, 'type') and 'web_search_call' in chunk.type:
+        print(f"\n🔧 TOOL CALL: {chunk.type}")
+        if hasattr(chunk, 'item') and hasattr(chunk.item, 'action'):
+            print(f"   Action: {chunk.item.action}")
+        if hasattr(chunk, 'item') and hasattr(chunk.item, 'status'):
+            print(f"   Status: {chunk.item.status}")
 
 print("\n" + "="*60)
 print("STREAMING COMPLETE!")
