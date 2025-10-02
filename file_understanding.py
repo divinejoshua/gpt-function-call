@@ -10,7 +10,7 @@ print("=" * 60)
 
 # Use responses.stream for streaming
 stream = client.responses.create(
-    model="gpt-4.1",
+    model="gpt-5-mini",
     stream=True,
     input=[
         {
